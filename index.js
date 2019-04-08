@@ -11,6 +11,8 @@ dotenv.config();
 
 const port = process.env.PORT || 80;
 
+const dev = process.env.NODE_ENV != 'production';
+
 const mailgunApiKey = process.env.MAILGUN_API_KEY;
 const mailgunDomainName = process.env.MAILGUN_DOMAIN_NAME;
 const serviceDestinationEmail = process.env.SERVICE_DESTINATION_EMAIL;
@@ -25,10 +27,13 @@ if (!serviceDestinationEmail) throw Error('No service destination email');
 const mg = mailgun({apiKey: mailgunApiKey, domain: mailgunDomainName});
 
 const server = restify.createServer();
+const origins = dev
+  ? ['http://www.whichost.com', 'localhost:80']
+  : ['http://www.whichost.com'];
 
 const cors = corsMiddleware({
   preflightMaxAge: 5, //Optional
-  origins: ['http://www.whichost.com'],
+  origins,
   allowHeaders: ['API-Token'],
   exposeHeaders: ['API-Token-Expiry'],
 });

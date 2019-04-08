@@ -35,10 +35,10 @@ const cors = corsMiddleware({
 
 server.pre(cors.preflight);
 server.use(cors.actual);
+server.use(restify.plugins.bodyParser());
 
 server.post('/message', (req, res, next) => {
   console.log('Validate the datas');
-  console.log(req);
 
   // Validation
 

@@ -12,6 +12,6 @@
     "restify": "^8.2.0"
   },
   "scripts": {
-    "run": "node index.js"
+    "start": "node index.js"
   }
 }

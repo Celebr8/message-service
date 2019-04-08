@@ -9,7 +9,8 @@
   "dependencies": {
     "dotenv": "^7.0.0",
     "mailgun-js": "^0.22.0",
-    "restify": "^8.2.0"
+    "restify": "^8.2.0",
+    "restify-cors-middleware": "^1.1.1"
   },
   "scripts": {
     "start": "node index.js"

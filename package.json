@@ -1,0 +1,17 @@
+{
+  "name": "message-service",
+  "version": "1.0.0",
+  "description": "Microservice to broadcast message from the frontend to Mailgun",
+  "main": "index.js",
+  "repository": "https://github.com/Whichost/message-service.git",
+  "author": "Loic Coenen <ijwtcymb@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^7.0.0",
+    "mailgun-js": "^0.22.0",
+    "restify": "^8.2.0"
+  },
+  "scripts": {
+    "run": "node index.js"
+  }
+}

@@ -4,6 +4,8 @@ const mailgun = require('mailgun-js');
 
 dotenv.config()
 
+const port = process.env.PORT || 80;
+
 const mailgunApiKey = process.env.MAILGUN_API_KEY;
 const mailgunDomainName = process.env.MAILGUN_DOMAIN_NAME;
 const serviceDestinationEmail = process.env.SERVICE_DESTINATION_EMAIL;
@@ -75,6 +77,7 @@ server.post('/message', (req, res, next) => {
 			
 			console.log('Fail to send email.')
 			console.log(error)
+
 			res.send(JSON.stringify({ status: 500, message: 'Failed to send email', error}))
 		
 		}
@@ -84,6 +87,6 @@ server.post('/message', (req, res, next) => {
 
 })
 
-server.listen(80, () => {
+server.listen(port, () => {
   console.log('%s listening at %s', server.name, server.url);
 });

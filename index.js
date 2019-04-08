@@ -28,7 +28,7 @@ const mg = mailgun({apiKey: mailgunApiKey, domain: mailgunDomainName});
 
 const server = restify.createServer();
 const origins = dev
-  ? ['http://www.whichost.com', 'localhost:80']
+  ? ['http://www.whichost.com', '*']
   : ['http://www.whichost.com'];
 
 const cors = corsMiddleware({

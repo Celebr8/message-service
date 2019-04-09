@@ -38,9 +38,9 @@ const cors = corsMiddleware({
   exposeHeaders: ['API-Token-Expiry'],
 });
 
-server.pre(cors.preflight);
-server.use(cors.actual);
-server.use(restify.plugins.bodyParser());
+server.pre(restify.CORS());
+server.use(restify.fullResponse());
+//server.use(restify.plugins.bodyParser());
 
 server.post('/message', (req, res, next) => {
   console.log('Validate the datas');

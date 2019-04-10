@@ -27,23 +27,28 @@ if (!serviceDestinationEmail) throw Error('No service destination email');
 const mg = mailgun({apiKey: mailgunApiKey, domain: mailgunDomainName});
 
 const server = restify.createServer();
+
 const origins = dev
   ? ['*']
   : ['http://www.whichost.com'];
 
 const cors = corsMiddleware({
   preflightMaxAge: 5, //Optional
-  origins,
+	origins,
   allowHeaders: ['API-Token'],
   exposeHeaders: ['API-Token-Expiry'],
 });
 
-server.pre(restify.CORS());
-server.use(restify.fullResponse());
-//server.use(restify.plugins.bodyParser());
+server.use(restify.plugins.bodyParser({
+	mapParams: true
+}));
+
+server.pre(cors.preflight);
+server.use(cors.actual);
 
 server.post('/message', (req, res, next) => {
-  console.log('Validate the datas');
+
+	const params = JSON.parse(req.body)
 
   // Validation
 
@@ -53,15 +58,15 @@ server.post('/message', (req, res, next) => {
     );
 
   if (
-    !checkParams(req.params, ['email', 'phoneNumber', 'message', 'subject'])
+    !checkParams(params, ['email', 'phoneNumber', 'message', 'subject'])
   ) {
-    if (!req.params.email)
+    if (!params.email)
       res.send(400, {status: 400, message: 'No email defined'});
-    else if (!req.params.phoneNumber)
+    else if (!params.phoneNumber)
       res.send(400, {status: 400, message: 'No phone number defined'});
-    else if (!req.params.message)
+    else if (!params.message)
       res.send(400, {status: 400, message: 'No message defined'});
-    else if (!req.params.subject)
+    else if (!params.subject)
       res.send(400, {status: 400, message: 'No subject defined'});
 
     return next();
@@ -82,16 +87,16 @@ server.post('/message', (req, res, next) => {
 
 	`;
 
-  console.log(`Recieve a message from ${req.params.email}`);
+  console.log(`Recieve a message from ${params.email}`);
 
   var data = {
-    from: req.params.email,
+    from: params.email,
     to: serviceDestinationEmail,
-    subject: req.params.subject,
-    text: req.param.message,
+    subject: params.subject,
+    text: params.message,
   };
 
-  mailgun.messages().send(data, function(error, body) {
+  return mg.messages().send(data, function(error, body) {
     if (!error) {
       console.log('Send email');
       res.send(JSON.stringify({status: 200, message: 'Send email'}));
@@ -102,6 +107,8 @@ server.post('/message', (req, res, next) => {
       res.send(
         JSON.stringify({status: 500, message: 'Failed to send email', error}),
       );
+
+			next();
     }
   });
 });

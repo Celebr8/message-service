@@ -7,8 +7,8 @@
   "author": "Loic Coenen <ijwtcymb@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@sendgrid/mail": "^6.3.1",
     "dotenv": "^7.0.0",
-    "mailgun-js": "^0.22.0",
     "restify": "^8.2.0",
     "restify-cors-middleware": "^1.1.1"
   },

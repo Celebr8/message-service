@@ -2,7 +2,7 @@
 
 const restify = require('restify');
 const dotenv = require('dotenv');
-const mailgun = require('mailgun-js');
+const sendgrid = require('@sendgrid/mail');
 const corsMiddleware = require('restify-cors-middleware');
 
 // Environement
@@ -13,42 +13,38 @@ const port = process.env.PORT || 80;
 
 const dev = process.env.NODE_ENV != 'production';
 
-const mailgunApiKey = process.env.MAILGUN_API_KEY;
-const mailgunDomainName = process.env.MAILGUN_DOMAIN_NAME;
+const sendgridApiKey = process.env.SENDGRID_API_KEY;
 const serviceDestinationEmail = process.env.SERVICE_DESTINATION_EMAIL;
 
-if (!mailgunApiKey) throw Error('No Mailgun API key defined');
-if (!mailgunDomainName) throw Error('No Mailgun domain name defined');
-
+if (!sendgridApiKey) throw Error('No Sendgrid API key defined');
 if (!serviceDestinationEmail) throw Error('No service destination email');
 
 // Initialisation
 
-const mg = mailgun({apiKey: mailgunApiKey, domain: mailgunDomainName});
-
 const server = restify.createServer();
 
-const origins = dev
-  ? ['*']
-  : ['http://www.whichost.com'];
+sendgrid.setApiKey(sendgridApiKey);
+
+const origins = dev ? ['*'] : ['http://www.whichost.com'];
 
 const cors = corsMiddleware({
   preflightMaxAge: 5, //Optional
-	origins,
+  origins,
   allowHeaders: ['API-Token'],
   exposeHeaders: ['API-Token-Expiry'],
 });
 
-server.use(restify.plugins.bodyParser({
-	mapParams: true
-}));
+server.use(
+  restify.plugins.bodyParser({
+    mapParams: true,
+  }),
+);
 
 server.pre(cors.preflight);
 server.use(cors.actual);
 
 server.post('/message', (req, res, next) => {
-
-	const params = JSON.parse(req.body)
+  const params = JSON.parse(req.body);
 
   // Validation
 
@@ -57,9 +53,7 @@ server.post('/message', (req, res, next) => {
       (soFar, key) => soFar && Object.keys(params).indexOf(key) != -1,
     );
 
-  if (
-    !checkParams(params, ['email', 'phoneNumber', 'message', 'subject'])
-  ) {
+  if (!checkParams(params, ['email', 'phoneNumber', 'message', 'subject'])) {
     if (!params.email)
       res.send(400, {status: 400, message: 'No email defined'});
     else if (!params.phoneNumber)
@@ -96,11 +90,17 @@ server.post('/message', (req, res, next) => {
     text: params.message,
   };
 
-  return mg.messages().send(data, function(error, body) {
-    if (!error) {
+  sendgrid
+    .send(data)
+    .then(() => {
+
       console.log('Send email');
       res.send(JSON.stringify({status: 200, message: 'Send email'}));
-    } else {
+      next();
+
+    })
+    .catch(error => {
+
       console.log('Fail to send email.');
       console.log(error);
 
@@ -108,9 +108,9 @@ server.post('/message', (req, res, next) => {
         JSON.stringify({status: 500, message: 'Failed to send email', error}),
       );
 
-			next();
-    }
-  });
+      next();
+
+    });
 });
 
 // Serve

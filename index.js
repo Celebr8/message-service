@@ -16,10 +16,12 @@ const dev = process.env.NODE_ENV != 'production';
 
 const sendgridApiKey = process.env.SENDGRID_API_KEY;
 const serviceDestinationEmail = process.env.SERVICE_DESTINATION_EMAIL;
+const serviceOriginEmail = process.env.SERVICE_ORIGIN_EMAIL;
 const recaptchaSecretKey = process.env.RECAPTCHA_SECRET_KEY;
 
 if (!sendgridApiKey) throw Error('No Sendgrid API key defined');
 if (!serviceDestinationEmail) throw Error('No service destination email');
+if (!serviceOriginEmail) throw Error('No service origin email');
 if (!recaptchaSecretKey) throw Error('No reCaptcha secret key');
 
 // Initialisation
@@ -122,10 +124,11 @@ server.post('/message', async (req, res, next) => {
   console.log(`Recieve a message from ${params.email}`);
 
   var data = {
-    from: params.email,
+    from: serviceOriginEmail,
     to: serviceDestinationEmail,
     subject: params.subject,
     text: params.message,
+		reply_to: params.email
   };
 
   sendgrid
